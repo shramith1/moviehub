@@ -1,154 +1,119 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Simple Voice Assistant</title>
+<meta charset="UTF-8">
+<title>Voice Assistant</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-      font-family: 'Segoe UI', sans-serif;
-    }
+<style>
+body{
+  margin:0;
+  height:100vh;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  background:linear-gradient(135deg,#141e30,#243b55);
+  font-family:Segoe UI;
+  color:white;
+}
 
-    body {
-      height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      background: linear-gradient(135deg, #141e30, #243b55);
-      color: #fff;
-    }
+.container{
+  text-align:center;
+  background:rgba(255,255,255,0.08);
+  padding:40px;
+  width:400px;
+  border-radius:20px;
+  backdrop-filter:blur(15px);
+}
 
-    .container {
-      text-align: center;
-      padding: 40px;
-      width: 400px;
-      border-radius: 20px;
-      background: rgba(255, 255, 255, 0.08);
-      backdrop-filter: blur(15px);
-      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
-      transition: 0.3s;
-    }
+button{
+  padding:15px 30px;
+  font-size:18px;
+  border:none;
+  border-radius:50px;
+  cursor:pointer;
+  background:linear-gradient(45deg,#00f260,#0575e6);
+  color:white;
+  font-weight:bold;
+}
 
-    h1 {
-      margin-bottom: 30px;
-      font-size: 28px;
-      letter-spacing: 1px;
-    }
-
-    button {
-      padding: 15px 35px;
-      font-size: 18px;
-      border: none;
-      border-radius: 50px;
-      cursor: pointer;
-      background: linear-gradient(45deg, #00f260, #0575e6);
-      color: white;
-      font-weight: bold;
-      transition: 0.3s ease-in-out;
-      box-shadow: 0 5px 20px rgba(0, 242, 96, 0.5);
-    }
-
-    button:hover {
-      transform: scale(1.05);
-      box-shadow: 0 8px 25px rgba(0, 242, 96, 0.8);
-    }
-
-    button:active {
-      transform: scale(0.95);
-    }
-
-    .listening {
-      animation: pulse 1.2s infinite;
-    }
-
-    @keyframes pulse {
-      0% { box-shadow: 0 0 0 0 rgba(0, 242, 96, 0.7); }
-      70% { box-shadow: 0 0 0 20px rgba(0, 242, 96, 0); }
-      100% { box-shadow: 0 0 0 0 rgba(0, 242, 96, 0); }
-    }
-
-    #output {
-      margin-top: 25px;
-      font-size: 18px;
-      padding: 15px;
-      border-radius: 10px;
-      background: rgba(255, 255, 255, 0.1);
-      min-height: 50px;
-      transition: 0.3s;
-    }
-
-    footer {
-      margin-top: 20px;
-      font-size: 12px;
-      opacity: 0.6;
-    }
-  </style>
-
+#output{
+  margin-top:20px;
+  padding:15px;
+  background:rgba(255,255,255,0.1);
+  border-radius:10px;
+  min-height:50px;
+}
+</style>
 </head>
+
 <body>
 
-  <div class="container">
-    <h1>🎤 Voice Assistant</h1>
-    <button id="listenBtn" onclick="startListening()">Start Listening</button>
-    <div id="output">Say something...</div>
-    <footer>AI Voice Assistant Demo</footer>
-  </div>
+<div class="container">
+  <h1>🎤 Voice Assistant</h1>
+  <button id="listenBtn">Start Listening</button>
+  <div id="output">Click the button and speak...</div>
+</div>
 
-  <script>
-    const output = document.getElementById("output");
-    const listenBtn = document.getElementById("listenBtn");
+<script>
+const output = document.getElementById("output");
+const listenBtn = document.getElementById("listenBtn");
 
-    function speak(text) {
-      const speech = new SpeechSynthesisUtterance(text);
-      speech.lang = "en-US";
-      window.speechSynthesis.speak(speech);
+function speak(text){
+  const speech = new SpeechSynthesisUtterance(text);
+  speech.lang = "en-US";
+  window.speechSynthesis.cancel();
+  window.speechSynthesis.speak(speech);
+}
+
+const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+if(!SpeechRecognition){
+  output.innerText = "Use Google Chrome.";
+  listenBtn.disabled = true;
+}else{
+
+  const recognition = new SpeechRecognition();
+  recognition.lang = "en-US";
+
+  listenBtn.onclick = () => {
+    recognition.start();
+    output.innerText = "Listening...";
+  };
+
+  recognition.onresult = function(event){
+    let transcript = event.results[0][0].transcript.toLowerCase().trim();
+    output.innerText = "You said: " + transcript;
+
+    if(transcript.includes("youtube")){
+      speak("Opening YouTube");
+      setTimeout(()=>{
+        window.location.href = "https://www.youtube.com";
+      },1000);
     }
 
-    const SpeechRecognition =
-      window.SpeechRecognition || window.webkitSpeechRecognition;
-
-    const recognition = new SpeechRecognition();
-    recognition.lang = "en-US";
-
-    function startListening() {
-      recognition.start();
-      output.innerText = "Listening...";
-      listenBtn.classList.add("listening");
+    else if(transcript.includes("google")){
+      speak("Opening Google");
+      setTimeout(()=>{
+        window.location.href = "https://www.google.com";
+      },1000);
     }
 
-    recognition.onresult = function (event) {
-      const command = event.results[0][0].transcript.toLowerCase();
-      output.innerText = "You said: " + command;
-      listenBtn.classList.remove("listening");
+    else if(transcript.includes("time")){
+      let time = new Date().toLocaleTimeString();
+      speak("The time is " + time);
+    }
 
-      if (command.includes("hello")) {
-        speak("Hello Roshan, how can I help you?");
-      } 
-      else if (command.includes("time")) {
-        const time = new Date().toLocaleTimeString();
-        speak("The time is " + time);
-      } 
-      else if (command.includes("open google")) {
-        speak("Opening Google");
-        window.open("https://www.google.com", "_blank");
-      } 
-      else if (command.includes("open youtube")) {
-        speak("Opening YouTube");
-        window.open("https://www.youtube.com", "_blank");
-      } 
-      else {
-        speak("Sorry, I did not understand that");
-      }
-    };
+    else{
+      speak("Command not recognized.");
+    }
+  };
 
-    recognition.onerror = function () {
-      listenBtn.classList.remove("listening");
-      speak("Sorry, there was an error. Please try again.");
-    };
-  </script>
+  recognition.onerror = function(event){
+    output.innerText = "Error: " + event.error;
+  };
+}
+</script>
 
 </body>
 </html>
